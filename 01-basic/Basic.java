@@ -27,7 +27,7 @@ public class Basic extends RouteBuilder {
         .setHeader("example")
           .constant("Java")
         .setBody()
-          .simple("Hello World! Camel K route written in ${header.example}.")
+          .simple("Hello World 2! Camel K route written in ${header.example}.")
         .to("log:info");
       
   }
