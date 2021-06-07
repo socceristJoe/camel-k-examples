@@ -1,0 +1,6 @@
+kamel:
+  install:
+    base-image: openjdk:11
+    build-timeout: 1h
+    maven-repositories:
+    - https://repository.apache.org/snapshots/
