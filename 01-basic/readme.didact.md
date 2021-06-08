@@ -161,51 +161,32 @@ Change the word `door` with `*door` to see it sent to the priority queue.
 
 The previous example can be automatically deployed as a Kubernetes CronJob if the delay between executions is changed into a value that can be expressed by a cron tab expression.
 
-For example, you can change the first endpoint (`timer:java?period=3000`) into the following: `timer:java?period=60000` (1 minute between executions). [Open the Routing.java file](didact://?commandId=vscode.openFolder&projectFilePath=01-basic/Routing.java&completion=Opened%20the%20Routing.java%20file "Opens the Routing.java file"){.didact} to apply the changes.
+For example, you can change the first endpoint (`timer:java?period=3000`) into the following: `timer:java?period=60000` (1 minute between executions).
 
 Now you can run the integration again:
 
 ```
-kamel run Routing.java --property-file routing.properties
+kamel run Routing.java -n camel-basic --property-file routing.properties  --dev
 ```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20Routing.java%20--property-file%20routing.properties&completion=Run%20Routing.java%20integration%20as%20CronJob. "Opens a new terminal and sends the command above"){.didact})
-
 Now you'll see that Camel K has materialized a cron job:
 
 ```
 kubectl get cronjob
+kamel delete routing -n camel-basic 
 ```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20get%20cronjob&completion=Get%20CronJobs. "Opens a new terminal and sends the command above"){.didact})
-
-You'll find a Kubernetes CronJob named "routing".
-
-The running behavior changes, because now there's no pod always running (beware you should not store data in memory when using the cronJob strategy).
-
 You can see the pods starting and being destroyed by watching the namespace:
 
 ```
-kubectl get pod -w
+kubectl -n camel-basic get pod -w
 ```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20get%20pod%20-w&completion=Watch%20Pods. "Opens a new terminal and sends the command above"){.didact})
-
-[**Click here to exit the current command**](didact://?commandId=vscode.didact.sendNamedTerminalCtrlC&text=camelTerm&completion=Camel%20K%20basic%20integration%20interrupted. "Interrupt the current operation on the terminal"){.didact},
-or hit `ctrl+c` on the terminal window.
-
 To see the logs of each integration starting up, you can use the `kamel log` command:
 
 ```
-kamel log routing
+kamel log routing -n camel-basic 
 ```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20log%20routing&completion=Watch%20integration%20logs. "Opens a new terminal and sends the command above"){.didact})
 
 You should see every minute a JVM starting, executing a single operation and terminating.
 
-[**Click here to exit the current command**](didact://?commandId=vscode.didact.sendNamedTerminalCtrlC&text=camelTerm&completion=Camel%20K%20basic%20integration%20interrupted. "Interrupt the current operation on the terminal"){.didact},
-or hit `ctrl+c` on the terminal window.
 
 The CronJob behavior is controlled via a Trait called `cron`. Traits are the main way to configure high level Camel K features, to 
 customize how integrations are rendered.
@@ -213,30 +194,19 @@ customize how integrations are rendered.
 To disable the cron feature and use the deployment strategy, you can run the integration with:
 
 ```
-kamel run Routing.java --property-file routing.properties -t cron.enabled=false
+kamel -n camel-basic run Routing.java --property-file routing.properties -t cron.enabled=false --dev
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20Routing.java%20--property-file%20routing.properties%20-t%20cron.enabled=false&completion=Run%20Routing.java%20integration%20without%20CronJobs. "Opens a new terminal and sends the command above"){.didact})
 
 This will disable the cron trait and restore the classic behavior (always running pod).
 
 You should see it reflected in the logs (which will be printed every minute by the same JVM):
 
 ```
-kamel log routing
+kamel log routing -n camel-basic 
 ```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20log%20routing&completion=Watch%20integration%20logs. "Opens a new terminal and sends the command above"){.didact})
-
-
-[**Click here to exit the current command**](didact://?commandId=vscode.didact.sendNamedTerminalCtrlC&text=camelTerm&completion=Camel%20K%20basic%20integration%20interrupted. "Interrupt the current operation on the terminal"){.didact},
-or hit `ctrl+c` on the terminal window.
-
-You can continue to hack on the examples.
 
 ## 4. Uninstall
 
 To cleanup everything, execute the following command:
 
 ```kubectl delete namespace camel-basic```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20delete%20namespace%20camel-basic&completion=Removed%20the%20namespace%20from%20the%20cluster. "Cleans up the cluster after running the example"){.didact})
