@@ -97,19 +97,11 @@ docker run -d -p 5000:5000 -v /opt/data/registry:/var/lib/registry kamel/registr
 ## install camel-k with CRDs
 基于临时 Registry：localhost:5000
 配置 build 超时时间：1h 
-指定运行 camel 的基础镜像：openjdk:8
-————————————————
-版权声明：本文为CSDN博主「wuweijie@apache.org」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
 原文链接：https://blog.csdn.net/wu_weijie/article/details/104892921
 ```
-kamel install
-
-kamel install -n camel-basic --registry=https://index.docker.io/v1/
-
 kamel install --base-image openjdk:11 --registry 192.168.50.4:5000 --registry-insecure --build-timeout 1h --save -n camel-basic
 
-
-kamel install --base-image openjdk:11 --registry azrgeaipoc.azurecr.io --maven-repository https://repository.apache.org/snapshots/ --build-timeout 1h --save -n camel-basic
+kamel install --base-image openjdk:11 --registry azrgeaipoc.azurecr.io --registry-auth-username $camelkacr --registry-auth-password $camelkacrsecret --build-timeout 1h --save -n camel-basic
 
 ```
 
