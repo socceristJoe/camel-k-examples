@@ -210,3 +210,15 @@ kamel log routing -n camel-basic
 To cleanup everything, execute the following command:
 
 ```kubectl delete namespace camel-basic```
+
+
+## 5. ActiveMQ
+
+
+portal 
+local http://192.168.50.4:8161/
+sandbox http://52.163.120.194:8161/
+
+```
+kamel -n camel-basic run ActiveMqSender.java --property-file application.properties --dev
+```

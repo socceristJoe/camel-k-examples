@@ -14,44 +14,17 @@ Read the general instructions in the [root README.md file](../README.md) for set
 
 Make sure you've read the [installation instructions](https://camel.apache.org/camel-k/latest/installation/installation.html) for your specific 
 cluster before starting the example.
-
-You should open this file with [Didact](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-didact) if available on your IDE.
-
 ## Requirements
-
-<a href='didact://?commandId=vscode.didact.validateAllRequirements' title='Validate all requirements!'><button>Validate all Requirements at Once!</button></a>
 
 **Kubectl CLI**
 
-The Kubernetes `kubectl` CLI tool will be used to interact with the Kubernetes cluster.
-
-[Check if the Kubectl CLI is installed](didact://?commandId=vscode.didact.cliCommandSuccessful&text=kubectl-requirements-status$$kubectl%20help&completion=Checked%20kubectl%20tool%20availability "Tests to see if `kubectl help` returns a 0 return code"){.didact}
-
-*Status: unknown*{#kubectl-requirements-status}
-
 **Connection to a Kubernetes cluster**
 
-You need to connect to a Kubernetes cluster in order to run the example.
-
-[Check if you're connected to a Kubernetes cluster](didact://?commandId=vscode.didact.cliCommandSuccessful&text=cluster-requirements-status$$kubectl%20get%20pod&completion=Checked%20Kubernetes%20connection "Tests to see if `kubectl get pod` returns a 0 return code"){.didact}
-
-*Status: unknown*{#cluster-requirements-status}
-
 **Apache Camel K CLI ("kamel")**
-
-You need the Apache Camel K CLI ("kamel") in order to access all Camel K features.
-
-[Check if the Apache Camel K CLI ("kamel") is installed](didact://?commandId=vscode.didact.requirementCheck&text=kamel-requirements-status$$kamel%20version$$Camel%20K%20Client&completion=Checked%20if%20Camel%20K%20CLI%20is%20available%20on%20this%20system. "Tests to see if `kamel version` returns a result"){.didact}
-
-*Status: unknown*{#kamel-requirements-status}
 
 **Knative installed on the cluster**
 
 The cluster also needs to have Knative installed and working. Refer to the [official Knative documentation](https://knative.dev/v0.15-docs/install/) for information on how to install it in your cluster.
-
-[Check if the Knative is installed](didact://?commandId=vscode.didact.requirementCheck&text=kservice-project-check$$kubectl%20api-resources%20--api-group=serving.knative.dev$$kservice%2Cksvc&completion=Verified%20Knative%20services%20installation. "Verifies if Knative is installed"){.didact}
-
-*Status: unknown*{#kservice-project-check}
 
 ### Optional Requirements
 
