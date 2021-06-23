@@ -23,11 +23,11 @@ public class Basic extends RouteBuilder {
   @Override
   public void configure() throws Exception {
 
-      from("timer:java?period=1000")
+      from("timer:java?period=1000&repeatCount=2")
         .setHeader("example")
           .constant("Java")
         .setBody()
-          .simple("Hello World! Camel K route written in ${header.example}.")
+          .simple("Hello World!!! Camel K route written in ${header.example}.")
         .to("log:info");
       
   }

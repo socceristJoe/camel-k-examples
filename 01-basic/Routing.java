@@ -32,7 +32,7 @@ public class Routing extends RouteBuilder {
   @Override
   public void configure() throws Exception {
 
-      from("timer:java?period=60000")
+      from("timer:java?period=1000")
         .id("generator")
         .bean(this, "generateRandomItem({{items}})")
         .choice()

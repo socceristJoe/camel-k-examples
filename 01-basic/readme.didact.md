@@ -153,7 +153,7 @@ as the `routing.properties`
 The `Routing.java` file shows how to inject properties into the routes via property placeholders and also the usage of the `@PropertyInject` annotation.
 
 ```
-kamel run Routing.java -n camel-basic --property-file routing.properties --dev
+kamel run -n camel-basic Routing.java --property-file routing.properties --dev
 ```
 Change the word `door` with `*door` to see it sent to the priority queue.
 
