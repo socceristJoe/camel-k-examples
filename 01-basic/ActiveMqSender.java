@@ -8,9 +8,8 @@ public class ActiveMqSender extends RouteBuilder {
                 .transform().constant("Hi this is Joe")
                 .log("${body}")
                 .multicast()
-                .to("activemq:joepoc-camel-activemq-pubsub01").log("File sent to Queue:joepoc-camel-activemq-pubsub01")
-                .to("activemq:joepoc-camel-activemq-pubsub02").log("File sent to Queue:joepoc-camel-activemq-pubsub02")
-                .to("activemq:joepoc-camel-activemq-pubsub03").log("File sent to Queue:joepoc-camel-activemq-pubsub03")
+                .to("activemq:joepoc-camel-activemq-helloJoe").log("File sent to Queue:joepoc-camel-activemq-helloJoe")
+                .to("activemq:joepoc-camel-activemq-helloRyan").log("File sent to Queue:joepoc-camel-activemq-helloRyan")
                 .end();
     }
 }

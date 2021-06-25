@@ -1,14 +1,14 @@
 import org.apache.camel.builder.RouteBuilder;
 
-public class SolacePaho extends RouteBuilder {
+public class SolacePahoProducer extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("timer:point2point-timer?period=2000&repeatCount=10")
-                .transform().constant("Hi this is Qiao")
+                .transform().constant("Hi this is Joe!!")
                 .log("${body}")
                 .multicast()
-                .to("paho:joepoc/joepocmqtt")
-                .log("File sent to Queue:joepoc-camel-activemq-pubsub01")
+                .to("paho:joepoc")
+                .log("File sent to Solace Topic:joepoc")
                 .end();
     }
 }
