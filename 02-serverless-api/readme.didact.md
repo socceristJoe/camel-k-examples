@@ -22,25 +22,51 @@ cluster before starting the example.
 
 **Apache Camel K CLI ("kamel")**
 
+**Istio**
+https://istio.io/latest/docs/setup/getting-started/
+```
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.9.6 TARGET_ARCH=x86_64 sh -
+```
+
 **Knative installed on the cluster**
 
 The cluster also needs to have Knative installed and working. Refer to the [official Knative documentation](https://knative.dev/v0.15-docs/install/) for information on how to install it in your cluster.
+
+https://knative.dev/docs/install/install-serving-with-yaml/
+https://github.com/knative/serving/issues/8323
+```
+kubectl apply -f https://github.com/knative/serving/releases/download/v0.23.0/serving-crds.yaml
+kubectl apply -f https://github.com/knative/serving/releases/download/v0.23.0/serving-core.yaml
+kubectl apply -f https://github.com/knative/net-istio/releases/download/v0.23.0/istio.yaml
+kubectl create cm in net-istio.yaml
+kubectl apply -f https://github.com/knative/net-istio/releases/download/v0.23.0/net-istio.yaml
+#remove admision controller
+kubectl delete ValidatingWebhookConfiguration  -l serving.knative.dev/release=v0.23.0
+kubectl delete MutatingWebhookConfiguration  -l serving.knative.dev/release=v0.23.0
+#real dns
+# Here knative.example.com is the domain suffix for your cluster
+*.knative.joepoc.com == A 13.67.34.216
+
+kubectl patch configmap/config-domain \
+  --namespace knative-serving \
+  --type merge \
+  --patch '{"data":{"knative.joepoc.com":""}}'
+```
+https://knative.dev/docs/install/install-eventing-with-yaml/
+```
+kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/eventing-crds.yaml
+kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/eventing-core.yaml
+```
+https://knative.dev/docs/install/install-extensions/
+```
+kubectl apply -f https://github.com/knative-sandbox/eventing-camel/releases/download/v0.23.0/camel.yaml
+```
 
 ### Optional Requirements
 
 The following requirements are optional. They don't prevent the execution of the demo, but may make it easier to follow.
 
 **VS Code Extension Pack for Apache Camel**
-
-The VS Code Extension Pack for Apache Camel provides a collection of useful tools for Apache Camel K developers,
-such as code completion and integrated lifecycle management. They are **recommended** for the tutorial, but they are **not**
-required.
-
-You can install it from the VS Code Extensions marketplace.
-
-[Check if the VS Code Extension Pack for Apache Camel by Red Hat is installed](didact://?commandId=vscode.didact.extensionRequirementCheck&text=extension-requirement-status$$redhat.apache-camel-extension-pack&completion=Camel%20extension%20pack%20is%20available%20on%20this%20system. "Checks the VS Code workspace to make sure the extension pack is installed"){.didact}
-
-*Status: unknown*{#extension-requirement-status}
 
 ## 1. Preparing the namespace
 
@@ -49,31 +75,22 @@ Let's open a terminal and go to the example directory:
 ```
 cd 02-serverless-api
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$cd%2002-serverless-api&completion=Executed%20command. "Opens a new terminal and sends the command above"){.didact})
-
-
 We're going to create a namespace named `camel-api` for running the example. To create it, execute the following command:
 
 ```
 kubectl create namespace camel-api
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20create%20namespace%20camel-api&completion=New%20project%20creation. "Opens a new terminal and sends the command above"){.didact})
-
-
 Now we can set the `camel-api` namespace as default namespace for the following commands:
 
 ```
 kubectl config set-context --current --namespace=camel-api
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20config%20set-context%20--current%20--namespace%3Dcamel-api&completion=New%20project%20creation. "Opens a new terminal and sends the command above"){.didact})
 
-You need to install Camel K in the `camel-api` namespace (or globally in the whole cluster).
-In many settings (e.g. OpenShift, CRC), it's sufficient to execute the following command to install Camel K:
+https://portal.azure.com/#@pgone.onmicrosoft.com/resource/subscriptions/66f32aee-5b1b-4577-834c-0aee44c29aac/resourceGroups/AZ-RG-EAI-Sandbox/providers/Microsoft.ContainerRegistry/registries/AZRGEAIPOC/accessKey
 
 ```
-kamel install
+kamel install --base-image openjdk:11 --registry azrgeaipoc.azurecr.io --registry-auth-username AZRGEAIPOC --registry-auth-password $camelkacrsecret --build-timeout 1h --save -n camel-api
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20install&completion=Installing%20Camel%20K. "Opens a new terminal and sends the command above"){.didact})
 
 NOTE: The `kamel install` command requires some prerequisites to be successful in some situations, e.g. you need to enable the registry addon on Minikube. Refer to the [Camel K install guide](https://camel.apache.org/camel-k/latest/installation/installation.html) for cluster-specific instructions.
 
@@ -82,8 +99,6 @@ To check that Camel K is installed we'll retrieve the IntegrationPlatform object
 ```
 kubectl get integrationplatform
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20get%20integrationplatform&completion=Executed%20Command. "Opens a new terminal and sends the command above"){.didact})
-
 You should find an IntegrationPlatform in status `Ready`.
 
 You can now proceed to the next section.
@@ -95,17 +110,23 @@ you can use an existing S3 bucket of your own or you can set up a local S3 compa
 
 ### 2.1 [Alternative 1] I don't have a S3 bucket: let's install a Minio backend
 
+create PV
+https://portal.azure.com/#blade/Microsoft_Azure_FileStorage/FileShareMenuBlade/overview/storageAccountId/%2Fsubscriptions%2F66f32aee-5b1b-4577-834c-0aee44c29aac%2FresourceGroups%2FAZ-RG-EAI-Sandbox%2Fproviders%2FMicrosoft.Storage%2FstorageAccounts%2Fstorageaccountazrge8711/path/minio-camel-api/protocol/SMB
+```
+kubectl -n camel-api create secret generic joe-secret --from-literal=azurestorageaccountname=storageaccountazrge8711 --from-literal=azurestorageaccountkey=
+
+```
+
 The `test` directory contains an all-in-one configuration file for creating a Minio backend that will provide a S3 compatible protocol
 for storing the objects.
 
-Open the ([test/minio.yaml](didact://?commandId=vscode.open&projectFilePath=02-serverless-api/test/minio.yaml "Opens the Minio configuration"){.didact}) file to check its content before applying.
+Open the ([test/minio.yaml] file to check its content before applying.
 
 To create the minio backend, just apply the provided file:
 
 ```
 kubectl apply -f test/minio.yaml
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20apply%20-f%20test/minio.yaml&completion=Created%20Minio%20backend. "Opens a new terminal and sends the command above"){.didact})
 
 That's enough to have a test object storage to use with the API integration.
 
@@ -114,12 +135,12 @@ That's enough to have a test object storage to use with the API integration.
 If you have a S3 bucket and you want to use it instead of the test backend, you can do it. The only 
 things that you need to provide are a **AWS Access Key ID and Secret** that you can obtain from the Amazon AWS console.
 
-Edit the ([s3.properties](didact://?commandId=vscode.open&projectFilePath=02-serverless-api/s3.properties "Opens the S3 configuration"){.didact}) to set the right value for the properties `camel.component.aws-s3.access-key` and `camel.component.aws-s3.secret-key`.
+Edit the to set the right value for the properties `camel.component.aws-s3.access-key` and `camel.component.aws-s3.secret-key`.
 Those properties will be automatically injected into the Camel `aw3-s3` component.
 
 ## 3. Designing the API
 
-An object store REST API is provided in the [openapi.yaml](didact://?commandId=vscode.open&projectFilePath=02-serverless-api/openapi.yaml "Opens the OpenAPI definition"){.didact} file.
+An object store REST API is provided in the [openapi.yaml] file.
 
 It contains operations for:
 - Listing the name of the contained objects
@@ -132,18 +153,17 @@ The file can be edited manually or better using an online editor, such as [Apicu
 ## 4. Running the API integration
 
 The endpoints defined in the API can be implemented in a Camel K integration using a `direct:<operationId>` endpoint.
-This has been implemented in the [API.java](didact://?commandId=vscode.open&projectFilePath=02-serverless-api/API.java "Opens the integration file"){.didact} file.
+This has been implemented in the [API.java] file.
 
 To run the integration, you need to link it to the proper configuration, that depends on what configuration you've chosen.
 
 ### 4.1 [Alternative 1] Using the test Minio server
 
-As alternative, to connect the integration to the **test Minio server** deployed before using the [test/MinioCustomizer.java](didact://?commandId=vscode.open&projectFilePath=02-serverless-api/test/MinioCustomizer.java "Opens the customizer file"){.didact} class:
+As alternative, to connect the integration to the **test Minio server** deployed before using the [test/MinioCustomizer.java] class:
 
 ```
-kamel run API.java --source test/MinioCustomizer.java --property-file test/minio.properties
+kamel -n camel-api run API.java --source test/MinioCustomizer.java --property-file test/minio.properties --dev
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20API.java%20--source%20test%2FMinioCustomizer.java%20--property-file%20test%2Fminio.properties&completion=Integration%20run. "Opens a new terminal and sends the command above"){.didact})
 
 ### 4.2 [Alternative 2] Using the S3 service
 
@@ -152,7 +172,6 @@ To connect the integration to the **AWS S3 service**:
 ```
 kamel run API.java --property-file s3.properties
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kamel%20run%20API.java%20--property-file%20s3.properties&completion=Integration%20run. "Opens a new terminal and sends the command above"){.didact})
 
 
 ## 5. Using the API
@@ -164,7 +183,6 @@ Make sure the integration is running, by checking its status:
 ```
 kubectl get integrations
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20get%20integrations&completion=Getting%20running%20integrations. "Opens a new terminal and sends the command above"){.didact})
 
 An integration named `api` should be present in the list and it should be in status `Running`. There's also a `kamel get` command which is an alternative way to list all running integrations.
 
@@ -174,15 +192,15 @@ After the integraiton has reached the running state, you can get the route corre
 
 ```
 URL=$(kubectl get routes.serving.knative.dev api -o jsonpath='{.status.url}')
+URL=$(camel-api get routes.serving.knative.dev api -o jsonpath='{.status.url}')
+
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$URL%3D%24%28kubectl%20get%20routes.serving.knative.dev%20api%20-o%20jsonpath%3D%27%7B.status.url%7D%27%29&completion=Getting%20route. "Opens a new terminal and sends the command above"){.didact})
 
 You can print the route to check if it's correct:
 
 ```
 echo $URL
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$echo%20$URL&completion=Print%20route. "Opens a new terminal and sends the command above"){.didact})
 
 NOTE: ensure that you've followed all the instructions in the Knative documentation during installation, especially the DNS part is fundamental for being able to contact the API.
 
@@ -192,14 +210,12 @@ Get the list of objects:
 ```
 curl -i $URL/
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$curl%20-i%20$URL&completion=Use%20the%20API. "Opens a new terminal and sends the command above"){.didact})
 
 Looking at the pods, you should find a pod corresponding to the API integration:
 
 ```
 kubectl get pods
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20get%20pods&completion=Getting%20running%20pods. "Opens a new terminal and sends the command above"){.didact})
 
 If you wait **at least one minute** without invoking the API, you'll find that the pod will disappear.
 Calling the API again will make the pod appear to serve the request. This is done to save resources and it's one the main features of Knative Serving.
@@ -210,37 +226,33 @@ Upload an object:
 ```
 curl -i -X PUT --header "Content-Type: application/octet-stream" --data-binary "@API.java" $URL/example
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$curl%20-i%20-X%20PUT%20--header%20%22Content-Type%3A%20application%2Foctet-stream%22%20--data-binary%20%22%40API.java%22%20%24URL%2Fexample&completion=Use%20the%20API. "Opens a new terminal and sends the command above"){.didact})
 
 Get the new list of objects:
 ```
 curl -i $URL/
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$curl%20-i%20$URL&completion=Use%20the%20API. "Opens a new terminal and sends the command above"){.didact})
 
 Get the content of a file:
 ```
 curl -i $URL/example
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$curl%20-i%20%24URL%2Fexample&completion=Use%20the%20API. "Opens a new terminal and sends the command above"){.didact})
 
 Delete the file:
 ```
 curl -i -X DELETE $URL/example
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$curl%20-i%20-X%20DELETE%20%24URL%2Fexample&completion=Use%20the%20API. "Opens a new terminal and sends the command above"){.didact})
 
 Get (again) the new list of objects:
 ```
 curl -i $URL/
 ```
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$curl%20-i%20$URL&completion=Use%20the%20API. "Opens a new terminal and sends the command above"){.didact})
 
 
 ## 6. Uninstall
+```
+kamel -n camel-api delete api
+```
 
 To cleanup everything, execute the following command:
 
 ```kubectl delete namespace camel-api```
-
-([^ execute](didact://?commandId=vscode.didact.sendNamedTerminalAString&text=camelTerm$$kubectl%20delete%20namespace%20camel-api&completion=Removed%20the%20project%20from%20the%20cluster. "Cleans up the cluster after running the example"){.didact})

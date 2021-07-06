@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
+  namespace: camel-api
 spec:
   selector:
     matchLabels:
@@ -30,7 +31,7 @@ spec:
         - name: MINIO_ACCESS_KEY
           value: minio
         - name: MINIO_SECRET_KEY
-          value: minio123
+          value: miniojoe
         ports:
         - containerPort: 9000
         readinessProbe:
@@ -47,9 +48,25 @@ spec:
           periodSeconds: 20
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  azureFile:
+    secretName: joe-secret
+    shareName: minio-camel-api
+    readOnly: false
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: minio-pv-claim
+  namespace: camel-api
 spec:
   accessModes:
     - ReadWriteOnce
@@ -61,11 +78,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio
+  namespace: camel-api
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
     - port: 9000
-      targetPort: 9000
-      protocol: TCP
   selector:
     app: minio
