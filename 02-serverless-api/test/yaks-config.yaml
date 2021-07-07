@@ -5,10 +5,8 @@ pre:
 - name: minio installation
   run: |
     kubectl apply -f minio.yaml -n ${YAKS_NAMESPACE}
-    kubectl wait pod -l app=minio --for condition=Ready -n ${YAKS_NAMESPACE} --timeout=5m
-
+    kubectl wait pod -l app=minio --for condition=Ready -n ${YAKS_NAMESPACE} --timeout=50m
 - name: integration
   run: |
     kamel install -w -n ${YAKS_NAMESPACE}
-
-    kamel run API.java --source test/MinioCustomizer.java --property-file test/minio.properties -w -n ${YAKS_NAMESPACE}
+    kamel run API.java --source test/MinioCustomizer.java --property file:test/minio.properties -w -n ${YAKS_NAMESPACE}
