@@ -162,7 +162,7 @@ To run the integration, you need to link it to the proper configuration, that de
 As alternative, to connect the integration to the **test Minio server** deployed before using the [test/MinioCustomizer.java] class:
 
 ```
-kamel -n camel-api run API.java --source test/MinioCustomizer.java --property-file test/minio.properties --dev
+kamel -n camel-api run API.java --source test/MinioCustomizer.java --property file:test/minio.properties --dev
 ```
 
 ### 4.2 [Alternative 2] Using the S3 service
@@ -170,7 +170,7 @@ kamel -n camel-api run API.java --source test/MinioCustomizer.java --property-fi
 To connect the integration to the **AWS S3 service**:
 
 ```
-kamel run API.java --property-file s3.properties
+kamel -n camel-api run API.java --property-file s3.properties --dev
 ```
 
 
@@ -256,3 +256,5 @@ kamel -n camel-api delete api
 To cleanup everything, execute the following command:
 
 ```kubectl delete namespace camel-api```
+
+kamel uninstall -n camel-api
