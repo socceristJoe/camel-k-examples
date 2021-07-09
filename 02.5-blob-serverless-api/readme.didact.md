@@ -56,6 +56,8 @@ https://knative.dev/docs/install/install-eventing-with-yaml/
 ```
 kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/eventing-crds.yaml
 kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/eventing-core.yaml
+
+kubectl apply -f https://github.com/knative/eventing/releases/download/v0.23.0/in-memory-channel.yaml
 ```
 https://knative.dev/docs/install/install-extensions/
 ```
