@@ -1,0 +1,4 @@
+kamel:
+  install:
+    base-image: openjdk:11
+    build-timeout: 1h

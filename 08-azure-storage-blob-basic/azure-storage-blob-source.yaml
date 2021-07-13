@@ -5,6 +5,7 @@ apiVersion: sources.knative.dev/v1alpha1
 kind: CamelSource
 metadata:
   name: camel-azure-storage-blob
+  namespace: camel-api
 spec:
   source:
     integration:
@@ -20,8 +21,8 @@ spec:
         # can be adjusted to any values suitable in your scenario
         uri: azure-storage-blob:camelazure/orders
         parameters:
-          blobName: "{{azure.blob.blobName}}"
-          accessKey: "{{azure.blob.accessKey}}"
+          blobName: "orders.xml"
+          accessKey: "kQ7Bal2UyxvaH/eF1ziBvsGnoAksWJcirC6jH3S3hURgOa6BRujnwnlKpcG+BkYDM9k+AKn7rpTsz7lgGZKpVw=="
 
         steps:
         - to: "log:received?showAll=true&multiline=true"
