@@ -26,11 +26,11 @@ public class SolaceJmsProducer extends RouteBuilder {
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         
         CamelContext context = getContext();
-        context.addComponent("solace", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
+        context.addComponent("solace-jms", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
 
         from("timer:ticker?period=2000&repeatCount=10").setBody().constant("Hello from Camel-K!!")
                 // .to(ExchangePattern.InOnly, "solace:queue:joe-jms-queue").log("Messsage sent to Solace Queue:: ${body}");
-                .to(ExchangePattern.InOnly, "solace:topic:joepoc").log("Messsage sent to Solace Topic:: ${body}");
+                .to(ExchangePattern.InOnly, "solace-jms:topic:joepoc").log("Messsage sent to Solace Topic:: ${body}");
 
         session.close();
         connection.close();
