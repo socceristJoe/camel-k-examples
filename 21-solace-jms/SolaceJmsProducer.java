@@ -30,7 +30,7 @@ public class SolaceJmsProducer extends RouteBuilder {
 
         from("timer:ticker?period=2000&repeatCount=10").setBody().constant("Hello from Camel-K!!")
                 // .to(ExchangePattern.InOnly, "solace:queue:joe-jms-queue").log("Messsage sent to Solace Queue:: ${body}");
-                .to(ExchangePattern.InOnly, "solace-jms:topic:joepoc").log("Messsage sent to Solace Topic:: ${body}");
+                .to(ExchangePattern.InOnly, "solace-jms:topic:joepoc").log("Message sent to Solace Topic:: ${body}");
 
         session.close();
         connection.close();
