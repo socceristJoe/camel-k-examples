@@ -102,6 +102,11 @@ docker run -d -p 5000:5000 -v /opt/data/registry:/var/lib/registry kamel/registr
 kamel install --base-image openjdk:11 --registry 192.168.50.4:5000 --registry-insecure --build-timeout 1h --save -n camel-basic
 
 kamel install --base-image openjdk:11 --registry azrgeaipoc.azurecr.io --registry-auth-username $camelkacr --registry-auth-password $camelkacrsecret --build-timeout 1h --save -n camel-basic
+```
+in aks
+```
+kamel install --olm=false -n camel --registry acraksnativeinteastus2deveastus2hptf.azurecr.io --registry-auth-username acraksnativeinteastus2deveastus2hptf --registry-auth-password $camelkacrsecret --operator-image acraksnativeinteastus2deveastus2hptf.azurecr.io/apache/camel-k:1.4.0 --base-image acraksnativeinteastus2deveastus2hptf.azurecr.io/adoptopenjdk/openjdk11:slim --build-timeout 1h --save
+--build-strategy routine --build-publish-strategy Spectrum
 
 ```
 
